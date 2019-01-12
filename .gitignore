@@ -1,0 +1,8 @@
+#ignored
+
+/bin/
+/data/
+/lib/
+/include/
+/scripts/credentials.json
+/scripts/token.json
