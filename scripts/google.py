@@ -31,24 +31,75 @@ def obtain_credentials():
     service = build('sheets', 'v4', http=creds.authorize(Http()))
     return creds
 
-def write(make, model, price, row, row2, position): 
+def write(token): 
     credentials = obtain_credentials()
     service = build('sheets', 'v4', http=credentials.authorize(Http()))
+
+    checkpoint = None
+    row = None
+    letter = None
+    #try catch block to check for type of input
+    try: 
+        value = int(token.inputRow)
+        checkpoint = 'integer'
+    except ValueError:
+        #catch block notifies app that the input was not an integer
+        pass 
+        checkpoint = 'string'
+    
+    if checkpoint == 'string':
+        #example A2
+        #need to parse for the letter and the row 
+        array = list(token.inputRow)
+        for item in array:
+            try:
+                value = int(item)
+                row = value 
+            except ValueError:
+                letter = item 
+                pass 
+            #if this finishes if should set a value to variable 'row'
+    else:
+        row = token.inputRow
+
+    nextCol = checkNextCol(letter) + str(row)
+    nextRow = letter + str(row)
+
+    print ('Col', nextCol, 'row', nextRow)
+
     values = [
         [
-            make, model, price
+            token.inputMake, token.inputModel, token.inputCost
         ],
     ]
 
     Body = {
-    'values' : values,
+        'values' : values,
     }
 
     result = service.spreadsheets().values().update(
-    spreadsheetId=spreadsheet_id, range=range_name,
+    spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME,
     valueInputOption='RAW', body=Body).execute()
 
     print("Writing OK!!")
+
+#this function will write to the next available row in 
+def append(token):
+    credentials = obtain_credentials()
+    service = build('sheets', 'v4', http=credentials.authorize(Http()))
+
+    values = [
+        [
+            token.inputMake, token.inputModel, token.inputCost
+        ]
+    ]
+
+    Body = {
+        'values': values, 
+    }
+
+    result = service.spreadsheets().values().append(spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME, valueInputOption='RAW', body=Body).execute()
+    print('Data has been written!')
 
 def read(spreadsheet_id, range_name): 
     credentials = obtain_credentials()
@@ -65,24 +116,25 @@ def read(spreadsheet_id, range_name):
         return values
 
 def updateSheets():
-    replace = raw_input('do you want to replace any cells on the spreadsheet?')
+    replace = raw_input('do you want to replace any cells on the spreadsheet? \n')
 
     if replace == 'yes':
-        cellData = read(SPREADSHEET_ID, RANGE_NAME)
-        print('data is shown in order of the table - row numbers on the left, column starting from A-Z - if greater than  26, A2+ ')
+        display = raw_input('what rows do you want to be displayed? Please enter values as shown - A1:K4 \n' )
+        cellData = read(SPREADSHEET_ID, display)
+        print('data is shown in order of the table - row numbers on the left, column starting from A-Z - if greater than  26, A2+ \n')
         for row in cellData:
             print(cellData.index(row) + 1, ':', row)
-        row = raw_input('what row do you want to update?')
-        make = raw_input('what make?')
-        model = raw_input('what model?')
-        cost = raw_input('what price point?')
+        row = raw_input('what row do you want to update? \n')
+        make = raw_input('what make? \n')
+        model = raw_input('what model? \n')
+        cost = raw_input('what price point? \n')
 
         print('row: ', row)
         print('make: ', make)
         print('model: ', model)
         print('cost: ', cost)
 
-        checkpoint = raw_input('Is this information correct?')
+        checkpoint = raw_input('Is this information correct? \n')
 
         if checkpoint == 'yes':
             #create object to hold our information and check boolean 
@@ -106,25 +158,25 @@ def updateSheets():
         return Token
 
 def position():
-    top = raw_input('top or bottom?')
+    top = raw_input('top or bottom? \n')
 
     tableData = read(SPREADSHEET_ID, RANGE_NAME)
-    print('data is shown in order of the table - row numbers on the left, column starting from A-Z - if greater than  26, A2+ ')
+    print('data is shown in order of the table - row numbers on the left, column starting from A-Z - if greater than  26, A2+ \n')
     for row in tableData:
         print(tableData.index(row) + 1, ':', row)
 
     if top == 'top':
         rowStart = 0 #index is 0, but the row is 1
         #need to get cell info from main()
-        make = raw_input('what make?')
-        model = raw_input('what model?')
-        cost = raw_input('what price point?')
+        make = raw_input('what make?\n')
+        model = raw_input('what model?\n')
+        cost = raw_input('what price point?\n')
 
         print('make: ', make)
         print('model: ', model)
         print('cost: ', cost)
 
-        checkpoint = raw_input('Is this information correct? (yes/no) ')
+        checkpoint = raw_input('Is this information correct? (yes/no) \n')
 
         if checkpoint == 'yes':
             #create object to hold our information and check boolean 
@@ -142,15 +194,15 @@ def position():
             return Token
     else:
         rowStart = len(tableData) 
-        make = raw_input('what make?')
-        model = raw_input('what model?')
-        cost = raw_input('what price point?')
+        make = raw_input('what make?\n')
+        model = raw_input('what model?\n')
+        cost = raw_input('what price point?\n')
 
         print('make: ', make)
         print('model: ', model)
         print('cost: ', cost)
 
-        checkpoint = raw_input('Is this information correct? (yes/no) ')
+        checkpoint = raw_input('Is this information correct? (yes/no) \n')
 
         if checkpoint == 'yes':
             #create object to hold our information and check boolean 
@@ -169,23 +221,23 @@ def position():
 
 def splicing():
     tableData = read(SPREADSHEET_ID, RANGE_NAME)
-    print('data is shown in order of the table - row numbers on the left, column starting from A-Z - if greater than  26, A2+ ')
+    print('data is shown in order of the table - row numbers on the left, column starting from A-Z - if greater than  26, A2+ \n')
     for row in tableData:
         print(tableData.index(row) + 1, ':', row)
 
-    beginning = raw_input('what\'s the above row number?')
-    end = raw_input('what\'s the bottom row number?')
+    beginning = raw_input('what\'s the above row number?\n')
+    end = raw_input('what\'s the bottom row number?\n')
     #need to move items around 
-    make = raw_input('what make?')
-    model = raw_input('what model?')
-    cost = raw_input('what price point?')
+    make = raw_input('what make?\n')
+    model = raw_input('what model?\n')
+    cost = raw_input('what price point?\n')
     print(beginning)
     print(end)
     print(make)
     print(model)
     print(cost)
 
-    checkpoint = raw_input('Is this information correct? (yes/no) ')
+    checkpoint = raw_input('Is this information correct? (yes/no) \n')
 
     if checkpoint == 'yes':
         #create object to hold our information and check boolean 
@@ -201,28 +253,37 @@ def splicing():
             boolean = False
 
         return Token
+
+def checkNextCol(value):
+    alphabet = ['a','b','c','d','e','f','g', 'h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+    for char in alphabet:
+        if value == char:
+            if char == 'z':
+                temp = -1 #resets number to 0 so the next index will be 0; the first element in the list
+            else: 
+                temp = alphabet.index(char)
+            return alphabet[temp + 1] 
  
-def main(spreadsheet_id, range_name):
+def main():
     # Call the Sheets API
     credentials = obtain_credentials()
     print('Got the credentials without FAIL!')
 
     #prompt
-    updatesheets = raw_input('do you want to update your sheet at this time?') #expecting yes or no 
+    updatesheets = raw_input('do you want to update your sheet at this time? \n') #expecting yes or no 
 
     if updatesheets == 'yes':
         answer = updateSheets()
         
         if answer.boolean == True:
-            #invoke write func
-            print(answer.boolean, answer.inputRow, answer.inputMake, answer.inputModel, answer.inputCost)
+            append(answer)
         elif answer.boolean == False: 
             updateSheets()
         elif answer.boolean == 'skipped':
             print('No changes were made to any rows and no updates were made')
 
 
-        startNew = raw_input('do you want to start inputting from the top of the page or the bottom? (yes/no)')
+        startNew = raw_input('do you want to start inputting from the top of the page or the bottom? (yes/no) \n')
 
         if startNew == 'yes':
             answer = position()
@@ -234,7 +295,7 @@ def main(spreadsheet_id, range_name):
                 position()
 
 
-        splice = raw_input('any specific cells shift down and add a line?') 
+        splice = raw_input('any specific cells shift down and add a line? \n') 
 
         if splice == 'yes': 
             answer = splicing()
@@ -245,10 +306,10 @@ def main(spreadsheet_id, range_name):
             elif answer.boolean == False:
                 splicing()
 
-        delete = raw_input('do you want to delete any data?')
+        delete = raw_input('do you want to delete any data? \n')
 
         if delete == 'yes': 
-            row = raw_input('what row do you want to delete?')
+            row = raw_input('what row do you want to delete? \n')
             print(row)
             #write new func for this
         else:
@@ -258,5 +319,5 @@ def main(spreadsheet_id, range_name):
 #Refactor to take user input and also to get credential one time and make it reuseable 
 
 if __name__ == '__main__':
-    main(SPREADSHEET_ID, RANGE_NAME)
-    # write(SPREADSHEET_ID, RANGE_NAME)
+    main()
+
