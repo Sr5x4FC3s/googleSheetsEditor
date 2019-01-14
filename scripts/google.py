@@ -112,6 +112,7 @@ def read(spreadsheet_id, range_name):
 
     if not values:
         print('No data found.')
+        return False
     else:
         return values
 
@@ -121,6 +122,15 @@ def updateSheets():
     if replace == 'yes':
         display = raw_input('what rows do you want to be displayed? Please enter values as shown - A1:K4 \n' )
         cellData = read(SPREADSHEET_ID, display)
+        if cellData == False: 
+            retry = raw_input('Did you want to search for a different cell? (yes/no) \n')
+            if retry == 'yes':
+                reattempt = raw_input('what rows do you want to be displayed? Please enter values as shown - A1:K4 \n' )
+                cellData = read(SPREADSHEET_ID, reattempt)
+            else:
+                print('If you want to retry, please restart the application and try again') 
+                sys.exit() #terminates the app 
+
         print('data is shown in order of the table - row numbers on the left, column starting from A-Z - if greater than  26, A2+ \n')
         for row in cellData:
             print(cellData.index(row) + 1, ':', row)
