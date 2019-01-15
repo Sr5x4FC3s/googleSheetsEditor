@@ -62,26 +62,24 @@ def write(token):
     else:
         row = token.inputRow
 
-    nextCol = checkNextCol(letter) + str(row)
-    nextRow = letter + str(row)
-
-    print ('Col', nextCol, 'row', nextRow)
-
     values = [
         [
             token.inputMake, token.inputModel, token.inputCost
         ],
     ]
 
+    valuesLength = len(values[0])
+
+    determineCellRange = determineRange(valuesLength, row) #format A1-C1
+    
+
     Body = {
         'values' : values,
     }
 
-    result = service.spreadsheets().values().update(
-    spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME,
-    valueInputOption='RAW', body=Body).execute()
+    result = service.spreadsheets().values().update(spreadsheetId=SPREADSHEET_ID, range=determineCellRange, valueInputOption='RAW', body=Body).execute()
 
-    print("Writing OK!!")
+    print("Inserted Row")
 
 #this function will write to the next available row in 
 def append(token):
@@ -115,6 +113,16 @@ def read(spreadsheet_id, range_name):
         return False
     else:
         return values
+
+def clear(row):
+    credentials = obtain_credentials()
+    service = build('sheets', 'v4', http=credentials.authorize(Http()))
+
+    Body = None
+    determinedRow = 'a' + str(row) + ':' + 'c' + str(row)
+
+    result = service.spreadsheets().values().clear(spreadsheetId=SPREADSHEET_ID, range=determinedRow, body=Body).execute()
+    print('Desired row has been deleted')
 
 def updateSheets():
     replace = raw_input('do you want to replace any cells on the spreadsheet? \n')
@@ -264,15 +272,10 @@ def splicing():
 
         return Token
 
-def checkNextCol(value):
+def determineRange(integer, row): 
     alphabet = ['a','b','c','d','e','f','g', 'h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
-    for char in alphabet:
-        if value == char:
-            if char == 'z':
-                temp = -1 #resets number to 0 so the next index will be 0; the first element in the list
-            else: 
-                temp = alphabet.index(char)
-            return alphabet[temp + 1] 
+    concatValues = alphabet[0] + str(row) + ':' + alphabet[integer - 1] + str(row)
+    return concatValues
  
 def main():
     # Call the Sheets API
@@ -286,7 +289,8 @@ def main():
         answer = updateSheets()
         
         if answer.boolean == True:
-            append(answer)
+            # append(answer)
+            write(answer)
         elif answer.boolean == False: 
             updateSheets()
         elif answer.boolean == 'skipped':
@@ -320,8 +324,7 @@ def main():
 
         if delete == 'yes': 
             row = raw_input('what row do you want to delete? \n')
-            print(row)
-            #write new func for this
+            clear(int(row))
         else:
             print('nothing will be deleted at this time')
 
