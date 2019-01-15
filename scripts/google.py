@@ -15,7 +15,7 @@ SCOPES = 'https://www.googleapis.com/auth/spreadsheets'
 
 # The ID and range of a spreadsheet.
 SPREADSHEETID = SPREADSHEET_ID
-RANGE_NAME = 'A1:K4'
+RANGE_NAME = 'A1:Z9'
 
 def obtain_credentials():
     # The file token.json stores the user's access and refresh tokens, and is
@@ -303,8 +303,7 @@ def main():
             answer = position()
 
             if answer.boolean == True:
-                #invoke write functions
-                print(answer.boolean, answer.inputMake, answer.inputModel, answer.inputCost)
+                append(answer) 
             elif answer.boolean == False:
                 position()
 
