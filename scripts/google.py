@@ -237,41 +237,6 @@ def position():
 
             return Token
 
-def splicing():
-    tableData = read(SPREADSHEET_ID, RANGE_NAME)
-    print('data is shown in order of the table - row numbers on the left, column starting from A-Z - if greater than  26, A2+ \n')
-    for row in tableData:
-        print(tableData.index(row) + 1, ':', row)
-
-    beginning = raw_input('what\'s the above row number?\n')
-    end = raw_input('what\'s the bottom row number?\n')
-    #need to move items around 
-    make = raw_input('what make?\n')
-    model = raw_input('what model?\n')
-    cost = raw_input('what price point?\n')
-    print(beginning)
-    print(end)
-    print(make)
-    print(model)
-    print(cost)
-
-    checkpoint = raw_input('Is this information correct? (yes/no) \n')
-
-    if checkpoint == 'yes':
-        #create object to hold our information and check boolean 
-        class Token(object):
-            inputMake = make
-            inputModel = model
-            inputCost = cost
-            boolean = True
-
-        return Token
-    else: 
-        class Token(object):
-            boolean = False
-
-        return Token
-
 def determineRange(integer, row): 
     alphabet = ['a','b','c','d','e','f','g', 'h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
     concatValues = alphabet[0] + str(row) + ':' + alphabet[integer - 1] + str(row)
@@ -301,23 +266,11 @@ def main():
 
         if startNew == 'yes':
             answer = position()
-
+            
             if answer.boolean == True:
                 append(answer) 
             elif answer.boolean == False:
                 position()
-
-
-        splice = raw_input('any specific cells shift down and add a line? \n') 
-
-        if splice == 'yes': 
-            answer = splicing()
-
-            if answer.boolean == True:
-                #invoke write functions
-                print(answer.boolean, answer.inputMake, answer.inputModel, answer.inputCost)
-            elif answer.boolean == False:
-                splicing()
 
         delete = raw_input('do you want to delete any data? \n')
 
